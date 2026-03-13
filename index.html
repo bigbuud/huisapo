@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HuisApo">
+<meta name="theme-color" content="#1A6B6B">
+<title>HuisApo</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FDFAF5;
+    --teal: #1A6B6B;
+    --teal-light: #2A8A8A;
+    --teal-pale: #E0F0F0;
+    --amber: #C87941;
+    --amber-pale: #FDF0E0;
+    --red: #B84040;
+    --red-pale: #FCE8E8;
+    --green: #2E7D52;
+    --green-pale: #E6F4EC;
+    --text: #1C2830;
+    --text-muted: #6B7A84;
+    --border: #DDD8CE;
+    --shadow: 0 2px 16px rgba(28,40,48,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  /* LOGIN */
+  #loginScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0f4040 0%, #1A6B6B 50%, #2A8A8A 100%);
+  }
+  .login-box { background: var(--warm-white); border-radius: 20px; padding: 2.5rem 2rem; width: 100%; max-width: 380px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); text-align: center; }
+  .login-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+  .login-box h1 { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--teal); margin-bottom: 0.25rem; }
+  .login-box p { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem; }
+  .login-fields { display: flex; flex-direction: column; gap: 0.75rem; text-align: left; }
+  .login-fields label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 4px; }
+  .login-fields input { width: 100%; padding: 0.7rem 0.9rem; border: 1px solid var(--border); border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; background: var(--cream); color: var(--text); transition: border-color 0.2s, box-shadow 0.2s; }
+  .login-fields input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,107,107,0.15); }
+  .btn-login { width: 100%; margin-top: 1.5rem; padding: 0.8rem; background: var(--teal); color: #fff; border: none; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+  .btn-login:hover { background: var(--teal-light); transform: translateY(-1px); }
+  .login-error { margin-top: 1rem; padding: 0.6rem 1rem; background: var(--red-pale); color: var(--red); border-radius: 8px; font-size: 0.85rem; display: none; }
+  .login-error.show { display: block; }
+
+  #app { display: none; }
+
+  /* HEADER */
+  header { background: var(--teal); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 72px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.15); }
+  .header-logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  header h1 { font-family: 'Playfair Display', serif; color: #fff; font-size: 1.5rem; font-weight: 600; }
+  header h1 span { font-weight: 300; opacity: 0.8; }
+  .header-right { display: flex; align-items: center; gap: 0.75rem; }
+  .btn-add { background: #fff; color: var(--teal); border: none; padding: 0.55rem 1.2rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+  .btn-add:hover { background: var(--cream); transform: translateY(-1px); }
+  .btn-scan { background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); padding: 0.55rem 1rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; }
+  .btn-scan:hover { background: rgba(255,255,255,0.3); }
+  .btn-logout { background: transparent; color: rgba(255,255,255,0.5); border: none; padding: 0.3rem 0.5rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.72rem; cursor: pointer; }
+  .btn-logout:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.1); }
+  .user-badge { color: rgba(255,255,255,0.7); font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
+
+  /* STATS */
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .stat-card { background: var(--warm-white); border-radius: 12px; padding: 1.1rem 1.3rem; border: 1px solid var(--border); box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; }
+  .stat-icon { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .stat-icon.total { background: var(--teal-pale); }
+  .stat-icon.ok { background: var(--green-pale); }
+  .stat-icon.soon { background: var(--amber-pale); }
+  .stat-icon.expired { background: var(--red-pale); }
+  .stat-number { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-number.total { color: var(--teal); }
+  .stat-number.ok { color: var(--green); }
+  .stat-number.soon { color: var(--amber); }
+  .stat-number.expired { color: var(--red); }
+
+  /* MAIN */
+  .main-content { max-width: 1200px; margin: 0 auto; padding: 0 2rem 2rem; }
+  .filter-bar { background: var(--warm-white); border: 1px solid var(--border); border-radius: 14px; padding: 1rem 1.2rem; display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
+  .filter-bar input[type="text"] { width: 100%; padding: 0.55rem 0.75rem 0.55rem 2.2rem; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--cream); color: var(--text); }
+  .filter-bar input[type="text"]:focus { outline: none; border-color: var(--teal); }
+  .filter-bar select { padding: 0.55rem 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; background: var(--cream); color: var(--text); cursor: pointer; }
+
+  /* GRID */
+  .med-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .med-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; box-shadow: var(--shadow); transition: transform 0.2s; cursor: pointer; }
+  .med-card:hover { transform: translateY(-2px); }
+  .med-card.expired { border-left: 4px solid var(--red); }
+  .med-card.soon { border-left: 4px solid var(--amber); }
+  .med-card.ok { border-left: 4px solid var(--green); }
+  .med-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+  .med-naam { font-weight: 600; font-size: 1rem; color: var(--text); }
+  .med-badge { font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; font-weight: 500; }
+  .badge-expired { background: var(--red-pale); color: var(--red); }
+  .badge-soon { background: var(--amber-pale); color: var(--amber); }
+  .badge-ok { background: var(--green-pale); color: var(--green); }
+  .med-info { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.82rem; color: var(--text-muted); }
+  .med-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+  .btn-sm { padding: 0.35rem 0.8rem; border-radius: 7px; font-size: 0.8rem; cursor: pointer; font-family: 'DM Sans', sans-serif; border: none; transition: all 0.2s; }
+  .btn-edit { background: var(--teal-pale); color: var(--teal); }
+  .btn-edit:hover { background: var(--teal); color: #fff; }
+  .btn-del { background: var(--red-pale); color: var(--red); }
+  .btn-del:hover { background: var(--red); color: #fff; }
+  .btn-bijsluiter { background: var(--amber-pale); color: var(--amber); }
+  .btn-bijsluiter:hover { background: var(--amber); color: #fff; }
+
+  /* BARCODE badge */
+  .barcode-badge { font-size: 0.7rem; color: var(--text-muted); background: var(--cream); padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--warm-white); border-radius: 16px; width: 100%; max-width: 540px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.3); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem 0; }
+  .modal-header h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--teal); }
+  .btn-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); line-height: 1; }
+  .modal-body { padding: 1.25rem 1.5rem 1.5rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 0.75rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+  .form-group input, .form-group select, .form-group textarea { padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; background: var(--cream); color: var(--text); }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,107,107,0.1); }
+  .form-group textarea { resize: vertical; min-height: 60px; }
+  .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--warm-white); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow); z-index: 300; max-height: 200px; overflow-y: auto; }
+  .autocomplete-item { padding: 0.6rem 0.9rem; cursor: pointer; font-size: 0.9rem; }
+  .autocomplete-item:hover { background: var(--teal-pale); }
+  .autocomplete-wrap { position: relative; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.25rem; }
+  .btn-primary { background: var(--teal); color: #fff; border: none; padding: 0.65rem 1.5rem; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; }
+  .btn-primary:hover { background: var(--teal-light); }
+  .btn-secondary { background: var(--cream); color: var(--text); border: 1px solid var(--border); padding: 0.65rem 1.5rem; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; cursor: pointer; }
+
+  /* SCAN MODAL */
+  .scan-modal { background: var(--warm-white); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 24px 64px rgba(0,0,0,0.3); overflow: hidden; }
+  .scan-header { background: var(--teal); color: #fff; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
+  .scan-header h2 { font-size: 1.1rem; font-weight: 600; }
+  #scanner-container { position: relative; width: 100%; background: #000; height: 280px; overflow: hidden; }
+  #scanner-container video { width: 100%; height: 100%; object-fit: cover; }
+  #scanner-container canvas { display: none; }
+  .scan-overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .scan-frame { width: 220px; height: 120px; border: 2px solid rgba(255,255,255,0.8); border-radius: 8px; box-shadow: 0 0 0 2000px rgba(0,0,0,0.4); }
+  .scan-line { position: absolute; width: 200px; height: 2px; background: linear-gradient(90deg, transparent, #00ff88, transparent); animation: scanline 2s infinite; }
+  @keyframes scanline { 0% { top: calc(50% - 60px); } 100% { top: calc(50% + 60px); } }
+  .scan-body { padding: 1.25rem; }
+  .scan-status { text-align: center; padding: 0.75rem; background: var(--teal-pale); border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; color: var(--teal); }
+  .scan-result { padding: 1rem; background: var(--green-pale); border-radius: 10px; border: 1px solid var(--green); margin-bottom: 1rem; display: none; }
+  .scan-result h3 { font-size: 1rem; color: var(--green); margin-bottom: 0.5rem; }
+  .scan-result p { font-size: 0.85rem; color: var(--text); }
+  .barcode-manual { display: flex; gap: 0.5rem; }
+  .barcode-manual input { flex: 1; padding: 0.6rem 0.85rem; border: 1px solid var(--border); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+  .barcode-manual button { padding: 0.6rem 1rem; background: var(--teal); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+
+  /* SAM result */
+  .sam-result { padding: 0.85rem 1rem; background: var(--amber-pale); border-radius: 10px; border: 1px solid #e8b87a; margin: 0.75rem 0; font-size: 0.85rem; }
+  .sam-result .sam-naam { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+  .sam-result .sam-cnk { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-muted); }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty-state h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: var(--text); }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--text); color: #fff; padding: 0.75rem 1.25rem; border-radius: 10px; font-size: 0.9rem; z-index: 500; transform: translateY(100px); opacity: 0; transition: all 0.3s; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+
+  @media (max-width: 768px) {
+    .stats-bar { grid-template-columns: 1fr 1fr; padding: 1rem; }
+    .main-content { padding: 0 1rem 2rem; }
+    header { padding: 0 1rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    header h1 { font-size: 1.2rem; }
+    .btn-add span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">💊</div>
+    <h1>HuisApo</h1>
+    <p>Uw persoonlijke apotheekbeheer met SAM CIVICS</p>
+    <div class="login-fields">
+      <div>
+        <label>Gebruikersnaam</label>
+        <input type="text" id="loginUser" value="apotheek" autocomplete="username">
+      </div>
+      <div>
+        <label>Wachtwoord</label>
+        <input type="password" id="loginPass" value="apotheek" autocomplete="current-password">
+      </div>
+    </div>
+    <button class="btn-login" onclick="login()">Inloggen</button>
+    <div class="login-error" id="loginError">Ongeldige gebruikersnaam of wachtwoord</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-logo">
+      <div class="logo-icon">💊</div>
+      <h1>Huis<span>Apo</span></h1>
+    </div>
+    <div class="header-right">
+      <button class="btn-scan" onclick="openScanModal()">📷 <span>Scannen</span></button>
+      <button class="btn-add" onclick="openModal()">+ <span>Toevoegen</span></button>
+      <span class="user-badge">👤 <span id="gebruikerNaam">apotheek</span></span>
+      <button class="btn-logout" onclick="logout()">Uitloggen</button>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-icon total">💊</div>
+      <div><div class="stat-number total" id="statTotaal">0</div><div class="stat-label">Totaal</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon ok">✅</div>
+      <div><div class="stat-number ok" id="statOk">0</div><div class="stat-label">In orde</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon soon">⚠️</div>
+      <div><div class="stat-number soon" id="statSoon">0</div><div class="stat-label">Vervalt binnenkort</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon expired">❌</div>
+      <div><div class="stat-number expired" id="statExpired">0</div><div class="stat-label">Verlopen</div></div>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="zoekInput" placeholder="Zoek op naam, barcode..." oninput="filterMedicijnen()">
+      </div>
+      <select id="categorieFilter" onchange="filterMedicijnen()">
+        <option value="alle">Alle categorieën</option>
+        <option value="pijnstiller">Pijnstillers</option>
+        <option value="koorts">Koorts</option>
+        <option value="allergie">Allergie</option>
+        <option value="spijsvertering">Spijsvertering</option>
+        <option value="wondzorg">Wondzorg</option>
+        <option value="zalf/huid">Zalf/Huid</option>
+        <option value="vitaminen">Vitaminen</option>
+        <option value="ogen/oren">Ogen/Oren</option>
+        <option value="antibiotica">Antibiotica</option>
+        <option value="hulpmiddel">Hulpmiddelen</option>
+        <option value="overige">Overige</option>
+      </select>
+      <select id="sorteerSelect" onchange="laadMedicijnen()">
+        <option value="vervaldatum_asc">Vervaldatum ↑</option>
+        <option value="naam">Naam A-Z</option>
+        <option value="categorie">Categorie</option>
+        <option value="vervaldatum_desc">Vervaldatum ↓</option>
+      </select>
+    </div>
+    <div class="med-grid" id="medGrid"></div>
+  </div>
+</div>
+
+<!-- TOEVOEGEN/BEWERKEN MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitel">Medicijn toevoegen</h2>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Naam *</label>
+          <div class="autocomplete-wrap">
+            <input type="text" id="fNaam" placeholder="Begin te typen..." oninput="autocomplete(this.value)" autocomplete="off">
+            <div class="autocomplete-list" id="autocompleteList" style="display:none"></div>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label>Barcode</label>
+          <div style="display:flex;gap:0.5rem">
+            <input type="text" id="fBarcode" placeholder="EAN/barcode (optioneel)" style="flex:1">
+            <button type="button" onclick="scanForForm()" style="padding:0.6rem 0.8rem;background:var(--teal);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">📷</button>
+          </div>
+          <div id="samResultForm" style="display:none"></div>
+        </div>
+        <div class="form-group">
+          <label>Categorie *</label>
+          <select id="fCategorie">
+            <option value="pijnstiller">Pijnstiller</option>
+            <option value="koorts">Koorts</option>
+            <option value="allergie">Allergie</option>
+            <option value="spijsvertering">Spijsvertering</option>
+            <option value="wondzorg">Wondzorg</option>
+            <option value="zalf/huid">Zalf/Huid</option>
+            <option value="vitaminen">Vitaminen</option>
+            <option value="ogen/oren">Ogen/Oren</option>
+            <option value="antibiotica">Antibiotica</option>
+            <option value="hulpmiddel">Hulpmiddel</option>
+            <option value="overige">Overige</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Vervaldatum *</label>
+          <input type="date" id="fVervaldatum">
+        </div>
+        <div class="form-group">
+          <label>Hoeveelheid</label>
+          <input type="text" id="fHoeveelheid" placeholder="bv. 20">
+        </div>
+        <div class="form-group">
+          <label>Eenheid</label>
+          <input type="text" id="fEenheid" placeholder="tabletten, ml, gram...">
+        </div>
+        <div class="form-group">
+          <label>Locatie</label>
+          <input type="text" id="fLocatie" list="locatieList" placeholder="bv. Badkamerkast">
+          <datalist id="locatieList"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Bijsluiter URL</label>
+          <input type="url" id="fBijsluiter" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <label>Notities</label>
+          <textarea id="fNotities" rows="2" placeholder="Extra informatie..."></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeModal()">Annuleren</button>
+        <button class="btn-primary" onclick="saveMedicijn()">Opslaan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCAN MODAL -->
+<div class="modal-overlay" id="scanModalOverlay">
+  <div class="scan-modal">
+    <div class="scan-header">
+      <h2>📷 Barcode Scannen</h2>
+      <button class="btn-close" onclick="closeScanModal()" style="color:#fff;">✕</button>
+    </div>
+    <div id="scanner-container">
+      <div class="scan-overlay">
+        <div style="text-align:center">
+          <div class="scan-frame"></div>
+          <div class="scan-line"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scan-body">
+      <div class="scan-status" id="scanStatus">Camera starten... Richt op de barcode van het medicijn.</div>
+      <div class="scan-result" id="scanResultBox">
+        <h3>✅ Barcode gevonden!</h3>
+        <p id="scanResultText"></p>
+        <div id="samResultScan" style="margin-top:0.75rem"></div>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem">
+          <button class="btn-primary" onclick="voegScannedToe()" id="btnVoegToe">Toevoegen aan inventaris</button>
+          <button class="btn-secondary" onclick="resetScan()">Opnieuw scannen</button>
+        </div>
+      </div>
+      <div style="margin-top:1rem">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">Of voer barcode handmatig in:</p>
+        <div class="barcode-manual">
+          <input type="text" id="manualBarcode" placeholder="5400000000000">
+          <button onclick="zoekManualBarcode()">Zoeken</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let editId = null;
+let allesMedicijnen = [];
+let scannerActive = false;
+let scannedBarcode = '';
+let scannedSamData = null;
+let scanForFormMode = false;
+
+// ── Auth ──────────────────────────────────────────────────────────
+async function login() {
+  const gebruiker = document.getElementById('loginUser').value;
+  const wachtwoord = document.getElementById('loginPass').value;
+  try {
+    const r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ gebruiker, wachtwoord }) });
+    if (r.ok) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      document.getElementById('gebruikerNaam').textContent = gebruiker;
+      await laadAlles();
+    } else {
+      document.getElementById('loginError').classList.add('show');
+    }
+  } catch(e) { document.getElementById('loginError').classList.add('show'); }
+}
+
+async function logout() {
+  await fetch('/api/logout', { method: 'POST' });
+  location.reload();
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+// ── Init ──────────────────────────────────────────────────────────
+async function laadAlles() {
+  await Promise.all([laadMedicijnen(), laadStatistieken(), laadLocaties()]);
+}
+
+async function laadStatistieken() {
+  const r = await fetch('/api/statistieken');
+  const d = await r.json();
+  document.getElementById('statTotaal').textContent = d.totaal;
+  document.getElementById('statOk').textContent = d.ok;
+  document.getElementById('statSoon').textContent = d.binnenkort;
+  document.getElementById('statExpired').textContent = d.verlopen;
+}
+
+async function laadLocaties() {
+  const r = await fetch('/api/locaties');
+  const locaties = await r.json();
+  const dl = document.getElementById('locatieList');
+  dl.innerHTML = locaties.map(l => `<option value="${l}">`).join('');
+}
+
+async function laadMedicijnen() {
+  const sorteer = document.getElementById('sorteerSelect').value;
+  const r = await fetch('/api/medicijnen?sorteer=' + sorteer);
+  allesMedicijnen = await r.json();
+  renderMedicijnen(allesMedicijnen);
+}
+
+function filterMedicijnen() {
+  const zoek = document.getElementById('zoekInput').value.toLowerCase();
+  const cat = document.getElementById('categorieFilter').value;
+  const gefilterd = allesMedicijnen.filter(m => {
+    const matchZoek = !zoek || m.naam.toLowerCase().includes(zoek) || (m.barcode && m.barcode.includes(zoek)) || (m.notities && m.notities.toLowerCase().includes(zoek));
+    const matchCat = cat === 'alle' || m.categorie === cat;
+    return matchZoek && matchCat;
+  });
+  renderMedicijnen(gefilterd);
+}
+
+function getStatus(vervaldatum) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const vd = new Date(vervaldatum);
+  const diff = Math.ceil((vd - today) / (1000*60*60*24));
+  if (diff < 0) return { cls: 'expired', badge: 'badge-expired', label: 'Verlopen' };
+  if (diff <= 90) return { cls: 'soon', badge: 'badge-soon', label: `Nog ${diff} dagen` };
+  return { cls: 'ok', badge: 'badge-ok', label: 'In orde' };
+}
+
+function renderMedicijnen(lijst) {
+  const grid = document.getElementById('medGrid');
+  if (!lijst.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="icon">🗂️</div><h3>Geen medicijnen gevonden</h3><p>Voeg uw eerste medicijn toe via de + knop of scan een barcode.</p></div>';
+    return;
+  }
+  grid.innerHTML = lijst.map(m => {
+    const st = getStatus(m.vervaldatum);
+    const vdStr = new Date(m.vervaldatum).toLocaleDateString('nl-BE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    return `<div class="med-card ${st.cls}" onclick="openModal(${m.id})">
+      <div class="med-header">
+        <div class="med-naam">${m.naam}</div>
+        <span class="med-badge ${st.badge}">${st.label}</span>
+      </div>
+      <div class="med-info">
+        <span>📅 ${vdStr}</span>
+        <span>🏷️ ${m.categorie}</span>
+        ${m.hoeveelheid ? `<span>📦 ${m.hoeveelheid} ${m.eenheid||''}</span>` : '<span></span>'}
+        ${m.locatie ? `<span>📍 ${m.locatie}</span>` : '<span></span>'}
+        ${m.barcode ? `<span class="barcode-badge">🔢 ${m.barcode}</span>` : '<span></span>'}
+      </div>
+      <div class="med-actions" onclick="event.stopPropagation()">
+        <button class="btn-sm btn-edit" onclick="openModal(${m.id})">✏️ Bewerk</button>
+        <button class="btn-sm btn-del" onclick="deleteMedicijn(${m.id})">🗑️ Verwijder</button>
+        ${m.bijsluiter_url ? `<button class="btn-sm btn-bijsluiter" onclick="window.open('${m.bijsluiter_url}','_blank')">📋 Bijsluiter</button>` : ''}
+        ${m.sam_cnk ? `<button class="btn-sm btn-bijsluiter" onclick="zoekSAMbijsluiter('${m.sam_cnk}')">🔬 SAM</button>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Modal ─────────────────────────────────────────────────────────
+async function openModal(id) {
+  editId = id || null;
+  document.getElementById('modalTitel').textContent = id ? 'Medicijn bewerken' : 'Medicijn toevoegen';
+  if (id) {
+    const r = await fetch('/api/medicijnen/' + id);
+    const m = await r.json();
+    document.getElementById('fNaam').value = m.naam;
+    document.getElementById('fCategorie').value = m.categorie;
+    document.getElementById('fVervaldatum').value = m.vervaldatum;
+    document.getElementById('fHoeveelheid').value = m.hoeveelheid || '';
+    document.getElementById('fEenheid').value = m.eenheid || '';
+    document.getElementById('fLocatie').value = m.locatie || '';
+    document.getElementById('fNotities').value = m.notities || '';
+    document.getElementById('fBijsluiter').value = m.bijsluiter_url || '';
+    document.getElementById('fBarcode').value = m.barcode || '';
+  } else {
+    document.getElementById('fNaam').value = '';
+    document.getElementById('fCategorie').value = 'pijnstiller';
+    document.getElementById('fVervaldatum').value = '';
+    document.getElementById('fHoeveelheid').value = '';
+    document.getElementById('fEenheid').value = '';
+    document.getElementById('fLocatie').value = '';
+    document.getElementById('fNotities').value = '';
+    document.getElementById('fBijsluiter').value = '';
+    document.getElementById('fBarcode').value = scannedBarcode || '';
+    if (scannedSamData) voorvulVanSAM(scannedSamData);
+  }
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.getElementById('autocompleteList').style.display = 'none';
+  scannedBarcode = '';
+  scannedSamData = null;
+  document.getElementById('samResultForm').style.display = 'none';
+}
+
+async function saveMedicijn() {
+  const data = {
+    naam: document.getElementById('fNaam').value.trim(),
+    categorie: document.getElementById('fCategorie').value,
+    vervaldatum: document.getElementById('fVervaldatum').value,
+    hoeveelheid: document.getElementById('fHoeveelheid').value.trim(),
+    eenheid: document.getElementById('fEenheid').value.trim(),
+    locatie: document.getElementById('fLocatie').value.trim(),
+    notities: document.getElementById('fNotities').value.trim(),
+    bijsluiter_url: document.getElementById('fBijsluiter').value.trim(),
+    barcode: document.getElementById('fBarcode').value.trim(),
+    sam_cnk: scannedSamData ? (scannedSamData.cnk || '') : ''
+  };
+  if (!data.naam || !data.vervaldatum) { showToast('Naam en vervaldatum zijn verplicht', 'error'); return; }
+  const url = editId ? '/api/medicijnen/' + editId : '/api/medicijnen';
+  const method = editId ? 'PUT' : 'POST';
+  const r = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+  if (r.ok) {
+    closeModal();
+    await laadAlles();
+    showToast(editId ? 'Medicijn bijgewerkt' : 'Medicijn toegevoegd', 'success');
+  } else {
+    showToast('Fout bij opslaan', 'error');
+  }
+}
+
+async function deleteMedicijn(id) {
+  if (!confirm('Weet u zeker dat u dit medicijn wilt verwijderen?')) return;
+  const r = await fetch('/api/medicijnen/' + id, { method: 'DELETE' });
+  if (r.ok) { await laadAlles(); showToast('Medicijn verwijderd'); }
+}
+
+// ── Autocomplete ──────────────────────────────────────────────────
+async function autocomplete(q) {
+  const list = document.getElementById('autocompleteList');
+  if (q.length < 2) { list.style.display = 'none'; return; }
+  const r = await fetch('/api/zoek-geneesmiddel?q=' + encodeURIComponent(q));
+  const items = await r.json();
+  if (!items.length) { list.style.display = 'none'; return; }
+  list.innerHTML = items.map(i => `<div class="autocomplete-item" onclick="selectAutocomplete(${JSON.stringify(i).replace(/"/g,'&quot;')})">${i.naam} <span style="color:var(--text-muted);font-size:0.75rem">${i.categorie}</span></div>`).join('');
+  list.style.display = 'block';
+}
+
+function selectAutocomplete(item) {
+  document.getElementById('fNaam').value = item.naam;
+  document.getElementById('fCategorie').value = item.categorie || 'overige';
+  if (item.bijsluiter_url) document.getElementById('fBijsluiter').value = item.bijsluiter_url;
+  if (item.barcode) document.getElementById('fBarcode').value = item.barcode;
+  document.getElementById('autocompleteList').style.display = 'none';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.autocomplete-wrap')) document.getElementById('autocompleteList').style.display = 'none';
+});
+
+// ── SCAN MODAL ────────────────────────────────────────────────────
+function openScanModal() {
+  scanForFormMode = false;
+  scannedBarcode = '';
+  document.getElementById('scanModalOverlay').classList.add('show');
+  document.getElementById('scanResultBox').style.display = 'none';
+  document.getElementById('scanStatus').textContent = 'Camera starten... Richt op de barcode van het medicijn.';
+  startScanner();
+}
+
+function scanForForm() {
+  scanForFormMode = true;
+  scannedBarcode = '';
+  document.getElementById('scanModalOverlay').classList.add('show');
+  document.getElementById('scanResultBox').style.display = 'none';
+  document.getElementById('scanStatus').textContent = 'Scan de barcode van dit medicijn.';
+  startScanner();
+}
+
+function closeScanModal() {
+  stopScanner();
+  document.getElementById('scanModalOverlay').classList.remove('show');
+  if (!scanForFormMode) { scannedBarcode = ''; scannedSamData = null; }
+}
+
+function startScanner() {
+  if (scannerActive) return;
+  Quagga.init({
+    inputStream: {
+      name: 'Live',
+      type: 'LiveStream',
+      target: document.getElementById('scanner-container'),
+      constraints: { facingMode: 'environment', width: 640, height: 480 }
+    },
+    decoder: { readers: ['ean_reader', 'ean_8_reader', 'code_128_reader', 'code_39_reader', 'upc_reader', 'upc_e_reader'] },
+    locate: true
+  }, err => {
+    if (err) {
+      document.getElementById('scanStatus').textContent = 'Camera niet beschikbaar. Voer de barcode handmatig in.';
+      return;
+    }
+    scannerActive = true;
+    Quagga.start();
+    document.getElementById('scanStatus').textContent = '📷 Camera actief — richt op de barcode';
+  });
+
+  Quagga.onDetected(data => {
+    const code = data.codeResult.code;
+    if (code && code !== scannedBarcode) {
+      handleBarcode(code);
+    }
+  });
+}
+
+function stopScanner() {
+  if (scannerActive) {
+    try { Quagga.stop(); } catch(e) {}
+    scannerActive = false;
+  }
+}
+
+async function handleBarcode(barcode) {
+  stopScanner();
+  scannedBarcode = barcode;
+  document.getElementById('scanStatus').textContent = `Barcode gevonden: ${barcode} — SAM CIVICS opzoeken...`;
+
+  // Zoek in SAM CIVICS
+  try {
+    const r = await fetch('/api/sam/barcode/' + encodeURIComponent(barcode));
+    const d = await r.json();
+    scannedSamData = d.data;
+    toonScanResultaat(barcode, d);
+  } catch (e) {
+    toonScanResultaat(barcode, null);
+  }
+}
+
+function toonScanResultaat(barcode, samResponse) {
+  const box = document.getElementById('scanResultBox');
+  const txt = document.getElementById('scanResultText');
+  const samDiv = document.getElementById('samResultScan');
+
+  txt.innerHTML = `<strong>Barcode:</strong> ${barcode}`;
+
+  if (samResponse && samResponse.data) {
+    const d = samResponse.data;
+    // Probeer naam uit SAM data te halen (afhankelijk van API response structuur)
+    const naam = d.naam || d.name || d.productName || d.commercialName || (Array.isArray(d) && d[0] && (d[0].naam || d[0].name || d[0].productName)) || null;
+    const cnk = d.cnk || (Array.isArray(d) && d[0] && d[0].cnk) || null;
+
+    if (naam || cnk) {
+      samDiv.innerHTML = `<div class="sam-result">
+        <div class="sam-naam">🔬 ${naam || 'SAM CIVICS product'}</div>
+        ${cnk ? `<div class="sam-cnk">CNK: ${cnk}</div>` : ''}
+        ${samResponse.source === 'sam' ? '<div style="font-size:0.75rem;color:var(--teal);margin-top:4px">✓ Gevonden in SAM CIVICS database</div>' : ''}
+      </div>`;
+      if (naam) document.getElementById('fNaam') && (document.getElementById('fNaam').value = naam);
+    } else {
+      samDiv.innerHTML = `<div class="sam-result"><div class="sam-naam">SAM data ontvangen</div><div style="font-size:0.75rem;color:var(--text-muted)">${JSON.stringify(d).substring(0,150)}...</div></div>`;
+    }
+  } else {
+    samDiv.innerHTML = '<p style="font-size:0.82rem;color:var(--text-muted);font-style:italic">Niet gevonden in SAM CIVICS. U kunt het medicijn handmatig toevoegen.</p>';
+  }
+
+  box.style.display = 'block';
+  document.getElementById('scanStatus').textContent = 'Barcode gescand!';
+}
+
+function resetScan() {
+  scannedBarcode = '';
+  scannedSamData = null;
+  document.getElementById('scanResultBox').style.display = 'none';
+  document.getElementById('scanStatus').textContent = 'Camera starten...';
+  startScanner();
+}
+
+async function zoekManualBarcode() {
+  const bc = document.getElementById('manualBarcode').value.trim();
+  if (!bc) return;
+  await handleBarcode(bc);
+}
+
+function voegScannedToe() {
+  if (scanForFormMode) {
+    // Vul het formulier in
+    document.getElementById('fBarcode').value = scannedBarcode;
+    if (scannedSamData) voorvulVanSAM(scannedSamData);
+    closeScanModal();
+  } else {
+    closeScanModal();
+    openModal();
+  }
+}
+
+function voorvulVanSAM(d) {
+  const naam = d.naam || d.name || d.productName || d.commercialName || (Array.isArray(d) && d[0] && (d[0].naam || d[0].name || d[0].productName)) || null;
+  const cnk = d.cnk || (Array.isArray(d) && d[0] && d[0].cnk) || null;
+  if (naam) { document.getElementById('fNaam').value = naam; }
+  if (cnk) {
+    scannedSamData = Object.assign({}, scannedSamData, { cnk });
+    document.getElementById('samResultForm').innerHTML = `<div class="sam-result" style="margin-top:0.5rem"><div class="sam-naam">🔬 ${naam || 'SAM product'}</div>${cnk ? `<div class="sam-cnk">CNK: ${cnk}</div>` : ''}</div>`;
+    document.getElementById('samResultForm').style.display = 'block';
+  }
+}
+
+// ── SAM bijsluiter ────────────────────────────────────────────────
+async function zoekSAMbijsluiter(cnk) {
+  const r = await fetch('/api/sam/bijsluiter/' + encodeURIComponent(cnk));
+  const d = await r.json();
+  const url = `https://www.vas.ehealth.fgov.be/websamcivics/samcivics/findMedicinalProducts?cnk=${cnk}`;
+  window.open(url, '_blank');
+}
+
+// Barcode veld: live SAM lookup
+document.getElementById('fBarcode').addEventListener('blur', async function() {
+  const bc = this.value.trim();
+  if (!bc) return;
+  try {
+    const r = await fetch('/api/sam/barcode/' + encodeURIComponent(bc));
+    const d = await r.json();
+    if (d.data) {
+      scannedSamData = d.data;
+      const div = document.getElementById('samResultForm');
+      const naam = d.data.naam || d.data.name || d.data.productName || (Array.isArray(d.data) && d.data[0] && d.data[0].naam) || null;
+      if (naam) {
+        div.innerHTML = `<div class="sam-result"><div class="sam-naam">🔬 ${naam}</div><div style="font-size:0.75rem;color:var(--teal)">✓ Gevonden in SAM CIVICS</div></div>`;
+        div.style.display = 'block';
+        if (!document.getElementById('fNaam').value) document.getElementById('fNaam').value = naam;
+      }
+    }
+  } catch(e) {}
+});
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Auto-init ─────────────────────────────────────────────────────
+(async () => {
+  const r = await fetch('/api/auth/check');
+  const d = await r.json();
+  if (d.loggedIn) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('gebruikerNaam').textContent = d.gebruiker;
+    await laadAlles();
+  }
+})();
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "HuisApo",
+  "short_name": "HuisApo",
+  "description": "Inventarisatie van je huisapotheek met SAM CIVICS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1A6B6B",
+  "theme_color": "#1A6B6B",
+  "orientation": "any",
+  "icons": [
+    {"src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QA/wD/AP+gvaeTAAAAh0lEQVRYhe2WMQ6AIAxFX43eg3tw714dJa6ExISQgGBCSFx6AA9gZ1/vAwAAAAAAAAAAAAAAAAAAAH7GzKy19lBKKQC4u5t7731EHElyBkmyBElyBUmyB0myB0nyB0myB0nyB0myB0myB0nyB0nyB0myB0nyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA+AMAAAD4AH8BBbOxvQAAAABJRU5ErkJggg==", "sizes": "32x32", "type": "image/png"}
+  ]
+}
